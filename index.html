@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MinigameFriends — Scheduled Gorilla Tag Lobbies</title>
+    <style>
+        :root {
+            --bg: #0B0E14;
+            --surface: #141A24;
+            --surface-elevated: #1C2330;
+            --border: #252C38;
+            --text: #E9ECF0;
+            --text-secondary: #8899AA;
+            --accent: #FF6B6B;
+            --accent-soft: rgba(255, 107, 107, 0.15);
+            --success: #4ECB71;
+            --warning: #F5A623;
+            --danger: #E15554;
+            --radius: 14px;
+            --radius-sm: 10px;
+            --font: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1.5;
+            padding: 32px 16px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .logo-wrapper {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        .logo-mark {
+            width: 40px;
+            height: 40px;
+            background: var(--accent);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.25);
+        }
+
+        .logo-text {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            color: #fff;
+        }
+
+        .logo-text span {
+            color: var(--accent);
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 15px;
+            font-weight: 400;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+            gap: 16px;
+            width: 100%;
+            max-width: 960px;
+            margin-bottom: 32px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 22px 20px 18px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            user-select: none;
+        }
+
+        .card:hover {
+            background: var(--surface-elevated);
+            border-color: #3A4352;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .card.selected {
+            border-color: var(--accent);
+            background: var(--surface-elevated);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .card-emoji {
+            font-size: 28px;
+            background: rgba(255, 255, 255, 0.05);
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-title {
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: -0.2px;
+        }
+
+        .card-subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 1px;
+        }
+
+        .code-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 14px 0 10px;
+        }
+
+        .code-box {
+            background: #0A0F16;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 5px;
+            color: #fff;
+            flex: 1;
+            text-align: center;
+            transition: border 0.2s, box-shadow 0.2s;
+        }
+
+        .card.selected .code-box {
+            border-color: var(--accent);
+            box-shadow: 0 0 14px rgba(255, 107, 107, 0.2);
+        }
+
+        .copy-btn {
+            background: var(--accent);
+            border: none;
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            white-space: nowrap;
+        }
+
+        .copy-btn:hover {
+            background: #FF8787;
+        }
+        .copy-btn:active {
+            transform: scale(0.96);
+        }
+        .copy-btn.copied {
+            background: var(--success);
+        }
+
+        .countdown {
+            font-size: 13px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .countdown-value {
+            font-weight: 600;
+            color: var(--warning);
+            font-variant-numeric: tabular-nums;
+            font-family: 'SF Mono', 'Consolas', monospace;
+        }
+
+        .countdown-value.urgent {
+            color: var(--danger);
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0.4; }
+        }
+
+        .full-btn {
+            display: none;
+            width: 100%;
+            margin-top: 14px;
+            background: transparent;
+            border: 1px solid rgba(225, 85, 84, 0.4);
+            color: var(--danger);
+            padding: 9px 12px;
+            border-radius: var(--radius-sm);
+            font-weight: 500;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .card.selected .full-btn {
+            display: block;
+        }
+
+        .full-btn:hover {
+            background: rgba(225, 85, 84, 0.08);
+            border-color: var(--danger);
+        }
+
+        .backup-area {
+            display: none;
+            margin-top: 10px;
+            padding: 12px;
+            background: rgba(225, 85, 84, 0.06);
+            border: 1px dashed rgba(225, 85, 84, 0.25);
+            border-radius: var(--radius-sm);
+            text-align: center;
+        }
+
+        .backup-area.visible {
+            display: block;
+        }
+
+        .backup-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--danger);
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .backup-code-text {
+            font-family: 'SF Mono', 'Consolas', monospace;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            color: #fff;
+        }
+
+        .footer {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 12px;
+            margin-top: auto;
+            padding-top: 24px;
+        }
+
+        .footer strong {
+            color: var(--text);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--surface-elevated);
+            border: 1px solid var(--accent);
+            color: #fff;
+            padding: 10px 22px;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 13px;
+            z-index: 100;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @media (max-width: 600px) {
+            .grid { grid-template-columns: 1fr; }
+            .logo-text { font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="logo-wrapper">
+            <div class="logo-mark">🎮</div>
+            <div class="logo-text">Mini<span>game</span>Friends</div>
+        </div>
+        <p class="subtitle">Find players for your favorite Gorilla Tag modes. No account needed.</p>
+    </div>
+
+    <div class="grid" id="gridContainer"></div>
+
+    <div class="toast" id="toast"></div>
+
+    <div class="footer">
+        Codes refresh every <strong>10 minutes</strong> (on the clock). If a lobby is full, select the card and use the backup code.<br>
+        MinigameFriends is not affiliated with Another Axiom.
+    </div>
+
+    <script>
+        (function() {
+            var ROUND_MINUTES = 10;
+            var CODE_LEN = 5;
+            var CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            var EPOCH = new Date('2025-01-01T00:00:00Z').getTime();
+
+            var CATS = [
+                { id: 'ghost-in-the-graveyard', emoji: '👻', title: 'Ghost In The Graveyard', desc: 'Hide & Seek horror' },
+                { id: 'sharks-and-minnows', emoji: '🦈', title: 'Sharks and Minnows', desc: 'Tag across the map' },
+                { id: 'color-rush', emoji: '🎨', title: 'Color Rush', desc: 'Paint the floor' },
+                { id: 'floor-is-lava', emoji: '🌋', title: 'Floor Is Lava', desc: 'Don\'t touch the ground' }
+            ];
+
+            function hashStr(s) {
+                var h = 5381;
+                for (var i = 0; i < s.length; i++) {
+                    h = ((h << 5) + h) + s.charCodeAt(i);
+                    h = h & h;
+                }
+                return Math.abs(h);
+            }
+
+            function mulberry32(a) {
+                return function() {
+                    a |= 0; a = a + 0x6D2B79F5 | 0;
+                    var t = Math.imul(a ^ a >>> 15, 1 | a);
+                    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+                    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+                };
+            }
+
+            function makeCode(seed) {
+                var rng = mulberry32(seed);
+                var code = '';
+                for (var i = 0; i < CODE_LEN; i++) {
+                    code += CHARS[Math.floor(rng() * CHARS.length)];
+                }
+                return code;
+            }
+
+            function currentRound() {
+                var now = Date.now();
+                var block = ROUND_MINUTES * 60 * 1000;
+                return Math.floor((now - EPOCH) / block);
+            }
+
+            function getCodes(catId) {
+                var idx = currentRound();
+                return {
+                    code: makeCode(hashStr(catId + '_' + idx)),
+                    backup: makeCode(hashStr(catId + '_backup_' + idx))
+                };
+            }
+
+            function timeLeft() {
+                var now = Date.now();
+                var block = ROUND_MINUTES * 60 * 1000;
+                var rem = block - ((now - EPOCH) % block);
+                return rem;
+            }
+
+            var selected = null;
+            var backupsShown = {};
+            var grid = document.getElementById('gridContainer');
+            var toast = document.getElementById('toast');
+            var toastTimer = null;
+
+            function showToast(msg) {
+                toast.textContent = msg;
+                toast.classList.add('show');
+                if (toastTimer) clearTimeout(toastTimer);
+                toastTimer = setTimeout(function() { toast.classList.remove('show'); }, 2200);
+            }
+
+            function render() {
+                grid.innerHTML = '';
+                var codesByCat = {};
+                CATS.forEach(function(c) { codesByCat[c.id] = getCodes(c.id); });
+
+                var left = timeLeft();
+                var sec = Math.ceil(left / 1000);
+                var mins = Math.floor(sec / 60);
+                var secs = sec % 60;
+                var str = mins + ':' + (secs < 10 ? '0' : '') + secs;
+                var urgent = sec < 60;
+
+                CATS.forEach(function(cat) {
+                    var codes = codesByCat[cat.id];
+                    var isSel = (selected === cat.id);
+                    var card = document.createElement('div');
+                    card.className = 'card' + (isSel ? ' selected' : '');
+                    card.setAttribute('data-cat', cat.id);
+
+                    card.innerHTML =
+                        '<div class="card-header">' +
+                        '<div class="card-emoji">' + cat.emoji + '</div>' +
+                        '<div><div class="card-title">' + cat.title + '</div>' +
+                        '<div class="card-subtitle">' + cat.desc + '</div></div></div>' +
+                        '<div class="code-row">' +
+                        '<div class="code-box">' + codes.code + '</div>' +
+                        '<button class="copy-btn" data-action="copy">Copy</button></div>' +
+                        '<div class="countdown">⏳ Next code in <span class="countdown-value' + (urgent ? ' urgent' : '') + '">' + str + '</span></div>' +
+                        '<button class="full-btn" data-action="full">Lobby Full? Get Backup Code</button>' +
+                        '<div class="backup-area' + (isSel && backupsShown[cat.id] ? ' visible' : '') + '">' +
+                        '<div class="backup-label">Backup Code</div>' +
+                        '<div class="backup-code-text">' + (backupsShown[cat.id] ? codes.backup : '•••••') + '</div></div>';
+
+                    card.addEventListener('click', function(e) {
+                        if (e.target.closest('button')) return;
+                        if (selected === cat.id) { selected = null; } else { selected = cat.id; }
+                        render();
+                    });
+
+                    card.querySelector('[data-action="copy"]').addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        var codeToCopy = (isSel && backupsShown[cat.id]) ? codes.backup : codes.code;
+                        navigator.clipboard.writeText(codeToCopy).then(function() {
+                            var btn = e.target;
+                            var orig = btn.textContent;
+                            btn.textContent = 'Copied!';
+                            btn.classList.add('copied');
+                            showToast('Code copied — paste it in Gorilla Tag!');
+                            setTimeout(function() {
+                                btn.textContent = orig;
+                                btn.classList.remove('copied');
+                            }, 2000);
+                        }).catch(function() {
+                            showToast('Copy failed, please type the code manually.');
+                        });
+                    });
+
+                    card.querySelector('[data-action="full"]').addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        backupsShown[cat.id] = true;
+                        render();
+                        showToast('Backup code revealed! Try this one.');
+                    });
+
+                    grid.appendChild(card);
+                });
+
+                if (window._countdownUpdater) clearInterval(window._countdownUpdater);
+                window._countdownUpdater = setInterval(function() {
+                    var l = timeLeft();
+                    var s = Math.ceil(l / 1000);
+                    var m = Math.floor(s / 60);
+                    var ss = s % 60;
+                    var t = m + ':' + (ss < 10 ? '0' : '') + ss;
+                    var urg = s < 60;
+                    document.querySelectorAll('.countdown-value').forEach(function(el) {
+                        el.textContent = t;
+                        if (urg) { el.classList.add('urgent'); } else { el.classList.remove('urgent'); }
+                    });
+                    if (s === ROUND_MINUTES * 60) { render(); }
+                }, 250);
+            }
+
+            render();
+            setInterval(function() { render(); }, 30000);
+        })();
+    </script>
+</body>
+</html>
